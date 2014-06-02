@@ -44,7 +44,15 @@ namespace HFDActiveIncidents
                 dataGridView1.Columns["NumberOfUnits"].Visible = false;
                 dataGridView1.Columns["AlarmLevel"].Visible = false;
                 dataGridView1.Columns["CallTimeOpened"].Visible = false;
-                dataGridView1.Columns["CombinedResponse"].HeaderText = "Combined Resp.";
+                dataGridView1.Columns["DateRetrieved"].Visible = false;
+                dataGridView1.Columns["Agency"].Width = 45;
+                dataGridView1.Columns["KeyMap"].Width = 55;
+                dataGridView1.Columns["Latitude"].Width = 65;
+                dataGridView1.Columns["Longitude"].Width = 65;
+                dataGridView1.Columns["CombinedResponse"].Width = 60;
+                dataGridView1.Columns["AlarmLevelInt"].Width = 55;
+                dataGridView1.Columns["NumberOfUnitsInt"].Width = 55;
+                dataGridView1.Columns["CombinedResponse"].HeaderText = "Combined Response";
                 dataGridView1.Columns["NumberOfUnitsInt"].HeaderText = "# Units";
                 dataGridView1.Columns["AlarmLevelInt"].HeaderText = "Alarm Level";
                 dataGridView1.Columns["CallTimeOpenedDT"].HeaderText = "Call Time Opened";
