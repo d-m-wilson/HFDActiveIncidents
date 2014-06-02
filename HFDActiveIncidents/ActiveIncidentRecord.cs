@@ -132,6 +132,7 @@ namespace HFDActiveIncidents
                 return _nNumberOfUnits;
             }
         }
+        public string Units { get; set; }
 
         public DateTime DateRetrieved { get { return _dtRetrieved; } }
 
