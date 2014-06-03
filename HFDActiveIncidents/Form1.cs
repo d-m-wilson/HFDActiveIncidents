@@ -14,6 +14,7 @@ namespace HFDActiveIncidents
 {
     public partial class Form1 : Form
     {
+        private const string _viewMapColumnName = "ViewMap";
         private readonly string _windowTitle;
         private ActiveIncidentResult _wsresult;
 
@@ -56,6 +57,14 @@ namespace HFDActiveIncidents
                 dataGridView1.Columns["NumberOfUnitsInt"].HeaderText = "# Units";
                 dataGridView1.Columns["AlarmLevelInt"].HeaderText = "Alarm Level";
                 dataGridView1.Columns["CallTimeOpenedDT"].HeaderText = "Call Time Opened";
+                dataGridView1.Columns.Add(new DataGridViewButtonColumn
+                {
+                    Name = _viewMapColumnName,
+                    HeaderText = String.Empty,
+                    Text = "View Map",
+                    DisplayIndex = 7,
+                    UseColumnTextForButtonValue = true
+                });
             }
             finally
             {
@@ -78,6 +87,14 @@ namespace HFDActiveIncidents
             return data;
         }
 
+        private void LaunchGoogleMaps(double dblLatitude, double dblLongitude)
+        {
+            string strQuery = String.Format("{0}, {1}", dblLatitude, dblLongitude);
+
+            Process process = Process.Start("http://maps.google.com/maps?q="
+                + System.Uri.EscapeDataString(strQuery));
+        }
+
         private void googleMapsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedCells.Count == 0)
@@ -90,18 +107,28 @@ namespace HFDActiveIncidents
             {
                 ActiveIncidentRecord incident = (ActiveIncidentRecord)selectedRow.DataBoundItem;
 
-                //object objValue = selectedCell.Value;
-                //if (objValue == null || (!(objValue is string)))
-                //    return;
+                LaunchGoogleMaps(incident.Latitude, incident.Longitude);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error: " + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-                //string strValue = (string)objValue;
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Ignore clicks that are not on button cells.  
+            if (e.RowIndex < 0 ||
+                e.ColumnIndex != dataGridView1.Columns[_viewMapColumnName].Index)
+            {
+                return;
+            }
 
-                //Process process = Process.Start("http://maps.google.com/maps?q=" + System.Uri.EscapeDataString(strValue));
+            try
+            {
+                ActiveIncidentRecord incident = (ActiveIncidentRecord)dataGridView1.Rows[e.RowIndex].DataBoundItem;
 
-                string strQuery = String.Format("{0}, {1}", incident.Latitude, incident.Longitude);
-
-                Process process = Process.Start("http://maps.google.com/maps?q=" 
-                    + System.Uri.EscapeDataString(strQuery));
+                LaunchGoogleMaps(incident.Latitude, incident.Longitude);
             }
             catch (Exception ex)
             {
