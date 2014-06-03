@@ -17,11 +17,13 @@ namespace HFDActiveIncidents
         private const string _viewMapColumnName = "ViewMap";
         private readonly string _windowTitle;
         private ActiveIncidentResult _wsresult;
+        private DataGridViewButtonColumn _buttonColumn;
 
         public Form1()
         {
             InitializeComponent();
             _windowTitle = Application.ProductName + " v" + System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
+            _buttonColumn = null;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -39,6 +41,7 @@ namespace HFDActiveIncidents
             {
                 Text = _windowTitle + " - Loading Data";
                 _wsresult = await GetData();
+                dataGridView1.Columns.Clear();
                 dataGridView1.DataSource = _wsresult.ActiveIncidentDataTable;
                 dataGridView1.Columns["XCoord"].Visible = false;
                 dataGridView1.Columns["YCoord"].Visible = false;
@@ -57,14 +60,20 @@ namespace HFDActiveIncidents
                 dataGridView1.Columns["NumberOfUnitsInt"].HeaderText = "# Units";
                 dataGridView1.Columns["AlarmLevelInt"].HeaderText = "Alarm Level";
                 dataGridView1.Columns["CallTimeOpenedDT"].HeaderText = "Call Time Opened";
-                dataGridView1.Columns.Add(new DataGridViewButtonColumn
+
+                if (_buttonColumn == null)
                 {
-                    Name = _viewMapColumnName,
-                    HeaderText = String.Empty,
-                    Text = "View Map",
-                    DisplayIndex = 7,
-                    UseColumnTextForButtonValue = true
-                });
+                    _buttonColumn = new DataGridViewButtonColumn
+                    {
+                        Name = _viewMapColumnName,
+                        HeaderText = String.Empty,
+                        Text = "View Map",
+                        DisplayIndex = 8,
+                        UseColumnTextForButtonValue = true
+                    };
+
+                    dataGridView1.Columns.Add(_buttonColumn);
+                }
             }
             finally
             {
