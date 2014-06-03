@@ -41,7 +41,6 @@ namespace HFDActiveIncidents
             {
                 Text = _windowTitle + " - Loading Data";
                 _wsresult = await GetData();
-                dataGridView1.Columns.Clear();
                 dataGridView1.DataSource = _wsresult.ActiveIncidentDataTable;
                 dataGridView1.Columns["XCoord"].Visible = false;
                 dataGridView1.Columns["YCoord"].Visible = false;
@@ -69,7 +68,8 @@ namespace HFDActiveIncidents
                         HeaderText = String.Empty,
                         Text = "View Map",
                         DisplayIndex = 8,
-                        UseColumnTextForButtonValue = true
+                        UseColumnTextForButtonValue = true,
+                        Width = 65
                     };
 
                     dataGridView1.Columns.Add(_buttonColumn);
