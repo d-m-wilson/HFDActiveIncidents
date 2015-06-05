@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace HFDActiveIncidents
 {
     public partial class Form1 : Form
     {
+        private const int _exceptionTextMaxLength = 768;
         private const string _viewMapColumnName = "ViewMap";
         private readonly string _windowTitle;
         private ActiveIncidentResult _wsresult;
@@ -39,26 +35,31 @@ namespace HFDActiveIncidents
         {
             try
             {
+                timerRefresh.Stop();
                 Text = _windowTitle + " - Loading Data";
+                lblLoading.Show();
+                Refresh();
+
                 _wsresult = await GetData();
-                dataGridView1.DataSource = _wsresult.ActiveIncidentDataTable;
-                dataGridView1.Columns["XCoord"].Visible = false;
-                dataGridView1.Columns["YCoord"].Visible = false;
-                dataGridView1.Columns["NumberOfUnits"].Visible = false;
-                dataGridView1.Columns["AlarmLevel"].Visible = false;
-                dataGridView1.Columns["CallTimeOpened"].Visible = false;
-                dataGridView1.Columns["DateRetrieved"].Visible = false;
-                dataGridView1.Columns["Agency"].Width = 45;
-                dataGridView1.Columns["KeyMap"].Width = 55;
-                dataGridView1.Columns["Latitude"].Width = 65;
-                dataGridView1.Columns["Longitude"].Width = 65;
-                dataGridView1.Columns["CombinedResponse"].Width = 60;
-                dataGridView1.Columns["AlarmLevelInt"].Width = 55;
-                dataGridView1.Columns["NumberOfUnitsInt"].Width = 55;
-                dataGridView1.Columns["CombinedResponse"].HeaderText = "Combined Response";
-                dataGridView1.Columns["NumberOfUnitsInt"].HeaderText = "# Units";
-                dataGridView1.Columns["AlarmLevelInt"].HeaderText = "Alarm Level";
-                dataGridView1.Columns["CallTimeOpenedDT"].HeaderText = "Call Time Opened";
+
+                grdIncidents.DataSource = _wsresult.ActiveIncidentDataTable;
+                grdIncidents.Columns["XCoord"].Visible = false;
+                grdIncidents.Columns["YCoord"].Visible = false;
+                grdIncidents.Columns["NumberOfUnits"].Visible = false;
+                grdIncidents.Columns["AlarmLevel"].Visible = false;
+                grdIncidents.Columns["CallTimeOpened"].Visible = false;
+                grdIncidents.Columns["DateRetrieved"].Visible = false;
+                grdIncidents.Columns["Agency"].Width = 45;
+                grdIncidents.Columns["KeyMap"].Width = 55;
+                grdIncidents.Columns["Latitude"].Width = 65;
+                grdIncidents.Columns["Longitude"].Width = 65;
+                grdIncidents.Columns["CombinedResponse"].Width = 60;
+                grdIncidents.Columns["AlarmLevelInt"].Width = 55;
+                grdIncidents.Columns["NumberOfUnitsInt"].Width = 55;
+                grdIncidents.Columns["CombinedResponse"].HeaderText = "Combined Response";
+                grdIncidents.Columns["NumberOfUnitsInt"].HeaderText = "# Units";
+                grdIncidents.Columns["AlarmLevelInt"].HeaderText = "Alarm Level";
+                grdIncidents.Columns["CallTimeOpenedDT"].HeaderText = "Call Time Opened";
 
                 if (_buttonColumn == null)
                 {
@@ -72,12 +73,37 @@ namespace HFDActiveIncidents
                         Width = 65
                     };
 
-                    dataGridView1.Columns.Add(_buttonColumn);
+                    grdIncidents.Columns.Add(_buttonColumn);
                 }
+            }
+            catch (System.ServiceModel.FaultException ex)
+            {
+                StringBuilder errorMessage = new StringBuilder();
+                string exceptionText = ex.ToString();
+
+                errorMessage.Append("An error occurred while communicating with the HFD incidents web service:\n\n");
+                errorMessage.Append(exceptionText.Left(_exceptionTextMaxLength));
+
+                if (exceptionText.Length > _exceptionTextMaxLength)
+                {
+                    errorMessage.Append(" ...");
+                }
+
+                lblLoading.Hide();
+
+                MessageBox.Show(
+                    errorMessage.ToString(), 
+                    "Unable to load incident data");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error: " + ex.Message);
             }
             finally
             {
                 Text = _windowTitle;
+                lblLoading.Hide();
+                timerRefresh.Start();
             }
         }
 
@@ -106,10 +132,10 @@ namespace HFDActiveIncidents
 
         private void googleMapsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedCells.Count == 0)
+            if (grdIncidents.SelectedCells.Count == 0)
                 return;
 
-            DataGridViewCell selectedCell = dataGridView1.SelectedCells[0];
+            DataGridViewCell selectedCell = grdIncidents.SelectedCells[0];
             DataGridViewRow selectedRow = selectedCell.OwningRow;
 
             try
@@ -120,28 +146,28 @@ namespace HFDActiveIncidents
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Error: " + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.ToString(), "Error: " + ex.Message);
             }
         }
 
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void grdIncidents_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             // Ignore clicks that are not on button cells.  
             if (e.RowIndex < 0 ||
-                e.ColumnIndex != dataGridView1.Columns[_viewMapColumnName].Index)
+                e.ColumnIndex != grdIncidents.Columns[_viewMapColumnName].Index)
             {
                 return;
             }
 
             try
             {
-                ActiveIncidentRecord incident = (ActiveIncidentRecord)dataGridView1.Rows[e.RowIndex].DataBoundItem;
+                ActiveIncidentRecord incident = (ActiveIncidentRecord)grdIncidents.Rows[e.RowIndex].DataBoundItem;
 
                 LaunchGoogleMaps(incident.Latitude, incident.Longitude);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Error: " + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.ToString(), "Error: " + ex.Message);
             }
         }
     }

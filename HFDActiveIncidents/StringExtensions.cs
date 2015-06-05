@@ -8,9 +8,9 @@ namespace HFDActiveIncidents
 {
     public static class StringExtensions
     {
-        public static string Clip(this string s, int MaxLength)
+        public static string Left(this string s, int MaxLength)
         {
-            if (s == null || s.Length < MaxLength)
+            if (s == null || s.Length <= MaxLength)
             {
                 return s;
             }
